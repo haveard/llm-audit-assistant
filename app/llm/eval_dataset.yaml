@@ -1,0 +1,5 @@
+# Example Q&A pairs for evaluation
+- question: What is the audit result?
+  answer: The audit result is a clean report with no major findings.
+- question: Who authored the risk report?
+  answer: The risk report was authored by Jane Doe.

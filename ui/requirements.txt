@@ -1,0 +1,4 @@
+streamlit
+requests
+streamlit-extras
+# add any other UI dependencies here
