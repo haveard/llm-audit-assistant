@@ -10,8 +10,13 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       LLM_PROVIDER: ${LLM_PROVIDER}
       LLM_MODEL: ${LLM_MODEL}
+      MINIO_ENDPOINT: "minio:9000"
+      MINIO_ACCESS_KEY: "minioadmin"
+      MINIO_SECRET_KEY: "minioadmin"
+      MINIO_BUCKET: "uploads"
     depends_on:
       - weaviate
+      - minio
   ui:
     build:
       context: ./ui
@@ -37,6 +42,30 @@ services:
       ENABLE_GRPC: true
     volumes:
       - weaviate_data:/var/lib/weaviate
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+  minio-client:
+    image: minio/mc:latest
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        sleep 5 && \
+        mc alias set myminio http://minio:9000 minioadmin minioadmin && \
+        mc mb -p myminio/uploads || true && \
+        mc policy set public myminio/uploads || true && \
+        tail -f /dev/null
+      "
 
 volumes:
   weaviate_data:
+  minio_data:

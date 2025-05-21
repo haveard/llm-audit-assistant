@@ -18,3 +18,4 @@ tiktoken
 langchain-openai
 python-multipart
 streamlit-extras
+minio
