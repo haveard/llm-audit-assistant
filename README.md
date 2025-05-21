@@ -28,7 +28,16 @@ LLM Audit Assistant is a self-hosted proof-of-concept platform designed for team
 - Weaviate (vector store)
 - Streamlit (UI)
 - Docker
-- MinIO (S3)
+- MinIO (S3-compatible object storage)
+- Grafana Loki (log aggregation)
+- Promtail (log shipping)
+- Grafana (log visualization)
+
+## Observability & Logging
+- Logs from all containers are aggregated using Grafana Loki and Promtail.
+- To view logs, access Grafana at [http://localhost:3000](http://localhost:3000) (default password: admin).
+- Add Loki as a data source in Grafana (URL: `http://loki:3100`).
+- Explore and search logs from all your containers in the Grafana UI.
 
 ### .env example additions for local LLM via Ollama
 ```bash
