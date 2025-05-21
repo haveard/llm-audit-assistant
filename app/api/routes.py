@@ -2,6 +2,8 @@
 
 import os
 import logging
+import time
+from io import BytesIO
 
 from fastapi import APIRouter, UploadFile, File, Request
 from minio import Minio
@@ -31,17 +33,18 @@ MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "minioadmin")
 MINIO_BUCKET = os.getenv("MINIO_BUCKET", "uploads")
 
-minio_client = Minio(
-    MINIO_ENDPOINT,
-    access_key=MINIO_ACCESS_KEY,
-    secret_key=MINIO_SECRET_KEY,
-    secure=False
-)
 
-# Ensure bucket exists
-found = minio_client.bucket_exists(MINIO_BUCKET)
-if not found:
-    minio_client.make_bucket(MINIO_BUCKET)
+def get_minio_client():
+    client = Minio(
+        MINIO_ENDPOINT,
+        access_key=MINIO_ACCESS_KEY,
+        secret_key=MINIO_SECRET_KEY,
+        secure=False
+    )
+    # Ensure bucket exists (idempotent)
+    if not client.bucket_exists(MINIO_BUCKET):
+        client.make_bucket(MINIO_BUCKET)
+    return client
 
 
 @router.post("/upload")
@@ -49,29 +52,27 @@ async def upload_document(file: UploadFile = File(...)):
     logger.info(f"Received upload for file: {file.filename}")
     try:
         content = await file.read()
-        # Upload to MinIO instead of local /tmp
-        filename = file.filename or "uploaded_file"
-        import io
+        filename = file.filename or f"upload_{int(time.time())}"
+        minio_client = get_minio_client()
         minio_client.put_object(
             MINIO_BUCKET,
             filename,
-            data=io.BytesIO(content),
+            data=BytesIO(content),
             length=len(content),
             content_type=file.content_type or "application/octet-stream"
         )
-        logger.info(f"Uploaded {file.filename} to MinIO bucket {MINIO_BUCKET}")
+        logger.info(f"Uploaded {filename} to MinIO bucket {MINIO_BUCKET}")
         # Download back from MinIO for processing (stateless)
-        safe_filename = file.filename or "uploaded_file"
-        response = minio_client.get_object(MINIO_BUCKET, safe_filename)
-        with open(f"/tmp/{safe_filename}", "wb") as f:
+        response = minio_client.get_object(MINIO_BUCKET, filename)
+        with open(f"/tmp/{filename}", "wb") as f:
             f.write(response.read())
-        text, meta = load_document(f"/tmp/{file.filename}")
+        text, meta = load_document(f"/tmp/{filename}")
         logger.info(f"Loaded document: {meta}")
         chunks = preprocess_document(text, metadata=meta)
         rag.add_documents(chunks)
         documents.extend(chunks)
-        logger.info(f"Ingested {len(chunks)} chunks from {file.filename}")
-        return {"chunks": len(chunks), "filename": file.filename, "size": len(content)}
+        logger.info(f"Ingested {len(chunks)} chunks from {filename}")
+        return {"chunks": len(chunks), "filename": filename, "size": len(content)}
     except S3Error as s3e:
         logger.error(f"MinIO S3 error: {s3e}", exc_info=True)
         raise
