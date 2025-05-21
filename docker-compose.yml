@@ -1,8 +1,8 @@
 services:
   app:
     build: 
-      context: ./app
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: app/Dockerfile
     ports:
       - "8000:8000"
     environment:
