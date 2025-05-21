@@ -20,7 +20,6 @@ LLM Audit Assistant is a self-hosted proof-of-concept platform designed for team
 
 **Note:**
 - The UI and backend communicate via Docker Compose networking. The UI uses the `BACKEND_URL` environment variable, which defaults to `http://app:8000` inside Docker Compose. No manual changes are needed for connectivity.
-- The backend service no longer mounts the local `./app` directory as a volume. All code is copied into the image at build time. If you make code changes, re-run `docker compose up --build` to rebuild the containers.
 - For local development (not in Docker), set `BACKEND_URL` to `http://localhost:8000` in your environment or `.env` file for the UI.
 
 ## Running Tests
