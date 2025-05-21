@@ -22,7 +22,7 @@ with stylable_container(key="header",
     st.markdown(
         """
         <h1>🔍 LLM Audit Assistant Dashboard</h1>
-        <span style='font-size:1.1rem;'>Secure, self-hosted LLM-powered document analysis for enterprise teams.</span>
+        <span style='font-size:1.1rem;'>Secure, self-hosted LLM-powered document analysis for teams.</span>
         """,
         unsafe_allow_html=True
     )
