@@ -1,7 +1,9 @@
 # Pydantic models
 
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
+
 
 class DocumentUploadRequest(BaseModel):
     filename: str
@@ -10,9 +12,11 @@ class DocumentUploadRequest(BaseModel):
     date: Optional[str] = None
     content: Optional[str] = None
 
+
 class QueryRequest(BaseModel):
     question: str
     top_k: Optional[int] = 3
+
 
 class LLMResponse(BaseModel):
     answer: str

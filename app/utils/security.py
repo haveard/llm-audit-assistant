@@ -1,20 +1,23 @@
 # Prompt injection filters, sanitization
 
-import re
 import logging
+import re
+import time
+
 from fastapi import Request, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
-import time
 
 logger = logging.getLogger("llm_audit_assistant")
 logging.basicConfig(level=logging.INFO)
+
 
 async def log_request(request: Request, user_input: str, model_response: str, sources=None):
     logger.info(f"User input: {user_input}")
     logger.info(f"Model response: {model_response}")
     if sources:
         logger.info(f"Sources: {sources}")
+
 
 def scan_prompt_injection(text: str) -> bool:
     # Simple regex-based prompt injection detection
@@ -30,20 +33,24 @@ def scan_prompt_injection(text: str) -> bool:
             return True
     return False
 
+
 def sanitize_input(text: str, max_length: int = 2000) -> str:
     # Escape and limit input size
     text = text.replace("<", "&lt;").replace(">", "&gt;")
     return text[:max_length]
+
 
 def sanitize_output(text: str, max_length: int = 4000) -> str:
     # Escape and limit output size
     text = text.replace("<", "&lt;").replace(">", "&gt;")
     return text[:max_length]
 
+
 def filter_characters(text: str, allowed_pattern: str = r"[\w\s.,;:!?@#%&()\[\]{}\-_'\"]+") -> str:
     # Remove disallowed characters
     matches = re.findall(allowed_pattern, text)
     return "".join(matches)
+
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int = 10, window_seconds: int = 60):

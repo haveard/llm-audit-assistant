@@ -1,6 +1,7 @@
 import os
-import streamlit as st
+
 import requests
+import streamlit as st
 from streamlit_extras.stylable_container import stylable_container
 
 # Use BACKEND_URL from environment, default to localhost for local dev
@@ -8,7 +9,8 @@ BACKEND_URL = os.environ.get("BACKEND_URL", "http://app:8000")
 
 st.set_page_config(page_title="LLM Audit Assistant", layout="wide")
 
-with stylable_container(key="header", css_styles="background: #1a2634; color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;"):
+with stylable_container(key="header",
+                        css_styles="background: #1a2634; color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;"):
     st.markdown(
         """
         <h1>🔍 LLM Audit Assistant Dashboard</h1>
@@ -40,7 +42,7 @@ if st.button("Query") and question:
             st.subheader("📚 Source Chunks")
             if data.get("sources"):
                 for i, chunk in enumerate(data["sources"]):
-                    st.markdown(f"**Chunk {i+1}:** {chunk['text']}")
+                    st.markdown(f"**Chunk {i + 1}:** {chunk['text']}")
             st.subheader("⚙️ Raw Prompt & Token Usage")
             st.write(f"Tokens used: {data.get('tokens_used', 'N/A')}")
         else:

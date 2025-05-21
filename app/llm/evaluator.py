@@ -1,17 +1,20 @@
 # Metrics, eval datasets
 
+from typing import List, Dict
+
+import evaluate
 # Placeholder for evaluation metrics and datasets
 import yaml
-from typing import List, Dict
-import evaluate
 
 bleu = evaluate.load("bleu")
 rouge = evaluate.load("rouge")
+
 
 # Load Q&A pairs from YAML/JSON
 def load_eval_dataset(path: str) -> List[Dict]:
     with open(path, "r") as f:
         return yaml.safe_load(f)
+
 
 def evaluate_qa(predictions: List[str], references: List[str]) -> Dict[str, float]:
     bleu_result = bleu.compute(predictions=predictions, references=[[r] for r in references])

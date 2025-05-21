@@ -1,18 +1,21 @@
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
-from app.utils.security import RateLimiterMiddleware
-from app.llm.rag import RAGPipeline
 from app.llm.client import LLMClient
+from app.llm.rag import RAGPipeline
+from app.utils.security import RateLimiterMiddleware
 
 rag_pipeline = RAGPipeline(LLMClient())
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     rag_pipeline.weaviate.close()
+
 
 app = FastAPI(title="LLM Audit Assistant", lifespan=lifespan)
 
@@ -26,9 +29,11 @@ app.add_middleware(
 
 app.add_middleware(RateLimiterMiddleware, max_requests=20, window_seconds=60)
 
+
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
 
 app.include_router(router)
 

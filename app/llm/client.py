@@ -4,12 +4,14 @@
 # Example: OpenAI, Ollama, vLLM
 
 import os
-from dotenv import load_dotenv
-import openai
 import time
+
+import openai
 import requests
+from dotenv import load_dotenv
 
 load_dotenv()
+
 
 class LLMClient:
     def __init__(self, provider: str = "openai", model: str = "", ollama_url: str = ""):

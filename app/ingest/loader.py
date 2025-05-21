@@ -1,8 +1,8 @@
 # Load PDFs, DOCX, TXT
 
-import os
 import datetime
-from typing import List, Tuple
+import os
+from typing import Tuple
 
 from PyPDF2 import PdfReader
 from docx import Document

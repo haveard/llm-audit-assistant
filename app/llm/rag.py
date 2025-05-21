@@ -1,12 +1,15 @@
 # Vector search + prompt injection guard
 
-from app.llm.client import LLMClient
-from app.utils.security import scan_prompt_injection
-from langchain_openai import OpenAIEmbeddings
-from app.llm.prompt_template import PROMPT_TEMPLATE
 import os
 from typing import List, Dict, Any
+
 import weaviate
+from langchain_openai import OpenAIEmbeddings
+
+from app.llm.client import LLMClient
+from app.llm.prompt_template import PROMPT_TEMPLATE
+from app.utils.security import scan_prompt_injection
+
 
 class RAGPipeline:
     def __init__(self, llm_client: LLMClient):

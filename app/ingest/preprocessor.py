@@ -1,13 +1,15 @@
 # Split, chunk, clean
 
-from typing import List, Dict, Tuple, Optional
 import re
+from typing import List, Dict, Optional
+
 
 def clean_content(text: str) -> str:
     # Remove headers/footers (simple heuristic)
     lines = text.splitlines()
     cleaned = [l for l in lines if not re.match(r'^(Page \d+|Confidential|Header|Footer)', l)]
     return "\n".join(cleaned)
+
 
 def chunk_text(text: str, max_length: int = 1000) -> List[str]:
     # Simple chunking by sentences, then grouping
@@ -23,6 +25,7 @@ def chunk_text(text: str, max_length: int = 1000) -> List[str]:
     if current:
         chunks.append(current.strip())
     return chunks
+
 
 def preprocess_document(text: str, metadata: Optional[dict] = None, redaction_patterns: List[str] = []) -> List[Dict]:
     text = clean_content(text)

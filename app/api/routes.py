@@ -1,13 +1,15 @@
 # REST endpoints
 
+import os
+
 from fastapi import APIRouter, UploadFile, File, Request
+
 from app.api.schema import QueryRequest, LLMResponse
 from app.ingest.loader import load_document
 from app.ingest.preprocessor import preprocess_document
 from app.llm.client import LLMClient
 from app.llm.rag import RAGPipeline
 from app.utils.security import sanitize_input, sanitize_output, scan_prompt_injection, log_request
-import os
 
 router = APIRouter()
 llm_client = LLMClient(
@@ -18,6 +20,7 @@ llm_client = LLMClient(
 rag = RAGPipeline(llm_client)
 
 documents = []  # In-memory store for demo
+
 
 @router.post("/upload")
 async def upload_document(file: UploadFile = File(...)):
@@ -30,6 +33,7 @@ async def upload_document(file: UploadFile = File(...)):
     rag.add_documents(chunks)
     documents.extend(chunks)
     return {"chunks": len(chunks), "filename": file.filename, "size": len(content)}
+
 
 @router.post("/query", response_model=LLMResponse)
 async def query_llm(request: Request, query: QueryRequest):
@@ -48,6 +52,7 @@ async def query_llm(request: Request, query: QueryRequest):
         sources = top_chunks
     await log_request(request, user_question, answer, sources)
     return LLMResponse(answer=answer, sources=sources, tokens_used=None, latency_ms=None)
+
 
 @router.get("/status")
 def status():
