@@ -33,13 +33,21 @@ def load_docx(file_path: str) -> Tuple[str, dict]:
 
 
 def load_txt(file_path: str) -> Tuple[str, dict]:
-    with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read()
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+    except UnicodeDecodeError:
+        # Fallback to Latin-1 encoding if UTF-8 fails
+        with open(file_path, "r", encoding="latin-1") as f:
+            text = f.read()
     meta = extract_metadata(file_path)
     return text, meta
 
 
 def load_document(file_path: str) -> Tuple[str, dict]:
+    if not os.path.exists(file_path):
+        raise ValueError(f"File not found: {file_path}")
+        
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
         return load_pdf(file_path)
@@ -48,4 +56,4 @@ def load_document(file_path: str) -> Tuple[str, dict]:
     elif ext == ".txt":
         return load_txt(file_path)
     else:
-        raise ValueError(f"Unsupported file type: {ext}")
+        raise ValueError(f"Unsupported file type: {ext}. Supported types: .pdf, .docx, .txt")

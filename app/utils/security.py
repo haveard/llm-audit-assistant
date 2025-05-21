@@ -1,5 +1,6 @@
 # Prompt injection filters, sanitization
 
+import html
 import logging
 import re
 import time
@@ -13,13 +14,22 @@ logging.basicConfig(level=logging.INFO)
 
 
 async def log_request(request: Request, user_input: str, model_response: str, sources=None):
-    logger.info(f"User input: {user_input}")
-    logger.info(f"Model response: {model_response}")
+    """Log user request and model response with appropriate sanitization"""
+    # Truncate long inputs for log readability
+    truncated_input = user_input[:500] + "..." if len(user_input) > 500 else user_input
+    truncated_response = model_response[:500] + "..." if len(model_response) > 500 else model_response
+    
+    logger.info(f"User input: {truncated_input}")
+    logger.info(f"Model response: {truncated_response}")
     if sources:
-        logger.info(f"Sources: {sources}")
+        # Avoid logging full sources content, just the count and metadata
+        source_count = len(sources)
+        source_meta = [s.get("metadata", "") for s in sources]
+        logger.info(f"Sources: {source_count} chunks, metadata: {source_meta}")
 
 
 def scan_prompt_injection(text: str) -> bool:
+    """More comprehensive prompt injection detection"""
     # Simple regex-based prompt injection detection
     patterns = [
         r"ignore previous instructions",
@@ -27,6 +37,10 @@ def scan_prompt_injection(text: str) -> bool:
         r"you are now",
         r"repeat after me",
         r"/system",
+        r"system prompt",
+        r"ignore constraints",
+        r"new instructions",
+        r"overwrite instructions"
     ]
     for pat in patterns:
         if re.search(pat, text, re.IGNORECASE):
@@ -35,19 +49,27 @@ def scan_prompt_injection(text: str) -> bool:
 
 
 def sanitize_input(text: str, max_length: int = 2000) -> str:
-    # Escape and limit input size
-    text = text.replace("<", "&lt;").replace(">", "&gt;")
+    """Sanitize and limit input size, with HTML escaping"""
+    if not isinstance(text, str):
+        return ""
+    # HTML escape to prevent XSS if output is rendered in HTML
+    text = html.escape(text)
     return text[:max_length]
 
 
 def sanitize_output(text: str, max_length: int = 4000) -> str:
-    # Escape and limit output size
-    text = text.replace("<", "&lt;").replace(">", "&gt;")
+    """Sanitize and limit output size, with HTML escaping"""
+    if not isinstance(text, str):
+        text = str(text)
+    # HTML escape to prevent XSS if output is rendered in HTML
+    text = html.escape(text)
     return text[:max_length]
 
 
 def filter_characters(text: str, allowed_pattern: str = r"[\w\s.,;:!?@#%&()\[\]{}\-_'\"]+") -> str:
-    # Remove disallowed characters
+    """Remove disallowed characters"""
+    if not isinstance(text, str):
+        return ""
     matches = re.findall(allowed_pattern, text)
     return "".join(matches)
 
