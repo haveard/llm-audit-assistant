@@ -28,6 +28,7 @@ LLM Audit Assistant is a self-hosted proof-of-concept platform designed for team
 - Weaviate (vector store)
 - Streamlit (UI)
 - Docker
+- MinIO (S3)
 
 ### .env example additions for local LLM via Ollama
 ```bash
