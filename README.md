@@ -1,6 +1,6 @@
 # LLM Audit Assistant
 
-A self-hosted system for teams to analyze internal documents using LLMs. Warning, this is a proof of concept and not for production use. 
+LLM Audit Assistant is a self-hosted proof-of-concept platform designed for teams to analyze internal documents using large language models (LLMs). It enables secure document ingestion, preprocessing, and contextual retrieval-augmented generation (RAG) to provide relevant, AI-powered insights from enterprise data. The system features a custom evaluation harness for LLM outputs, prompt injection protection for enhanced security, and an admin UI for internal management. Built with FastAPI, LangChain, and Streamlit, it leverages Weaviate as a vector store for efficient document retrieval. The application is containerized with Docker and orchestrated via Docker Compose, ensuring easy deployment and service isolation. The UI and backend communicate seamlessly within Docker Compose using environment variables, and the backend is designed to be rebuilt for code changes. LLM Audit Assistant supports both local LLMs (via Ollama) and OpenAI models, making it flexible for various enterprise and research use cases.
 
 ## Features
 - Document ingestion & preprocessing
