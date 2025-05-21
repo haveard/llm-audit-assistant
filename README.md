@@ -130,3 +130,65 @@ LLM_PROVIDER=openai
 LLM_MODEL=o4-mini
 OPENAI_API_KEY=sk-...
 ```
+
+## Infrastructure Deployment with Terraform
+
+This project includes Terraform configurations for deploying the infrastructure required to run LLM Audit Assistant in cloud environments. This infrastructure-as-code approach ensures consistent deployments across environments.
+
+### Prerequisites
+
+1. [Terraform](https://www.terraform.io/downloads.html) installed (v1.0.0 or newer)
+2. AWS CLI configured with appropriate credentials
+3. Docker installed (for local image building)
+
+### Getting Started with Terraform
+
+1. Navigate to the Terraform directory:
+   ```sh
+   cd terraform
+   ```
+
+2. Copy the example variables file and customize it:
+   ```sh
+   cp terraform.tfvars.example terraform.tfvars
+   ```
+
+3. Initialize Terraform:
+   ```sh
+   terraform init
+   ```
+
+4. Review the execution plan:
+   ```sh
+   terraform plan
+   ```
+
+5. Apply the configuration:
+   ```sh
+   terraform apply
+   ```
+
+6. After deployment, Terraform will output the endpoints for all services.
+
+### Environment Configurations
+
+The Terraform setup includes configurations for multiple environments:
+
+- **dev**: Minimal infrastructure for development and testing
+- **staging**: Pre-production environment with production-like resources
+- **prod**: Full production environment with high availability
+
+Each environment can be selected by modifying the `environment` variable in your `terraform.tfvars` file.
+
+### Modules
+
+The Terraform configuration is organized into modules:
+
+- **ECR**: Elastic Container Registry for storing Docker images
+- **ECS Cluster**: For running containerized applications
+- **Networking**: VPC, subnets, and security groups
+- **S3**: Object storage for documents and application data
+
+### Remote State Management
+
+For team collaboration, it's recommended to configure remote state with the S3 backend. Uncomment and configure the backend block in `main.tf` to enable this feature.

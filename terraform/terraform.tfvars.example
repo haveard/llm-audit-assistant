@@ -1,0 +1,27 @@
+# LLM Audit Assistant - Example Terraform Variables
+# 
+# Copy this file to terraform.tfvars and modify as needed
+
+# AWS Region Configuration
+aws_region = "us-west-2"
+
+# Environment (dev, staging, prod)
+environment = "dev"
+
+# Project Name
+project_name = "llm-audit-assistant"
+
+# LLM Configuration
+llm_provider = "ollama"  # ollama, openai, azure
+llm_model    = "llama3"
+openai_api_key = ""  # Only needed if using OpenAI
+ollama_url   = "http://localhost:11434"  # Only needed if using Ollama
+
+# MinIO Configuration
+minio_root_user = "minioadmin"
+minio_root_password = "minioadmin"  # Change this for security
+minio_access_key = "minioaccess"
+minio_secret_key = "miniosecret"    # Change this for security
+
+# Grafana Configuration
+grafana_admin_password = "admin"     # Change this for security

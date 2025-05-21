@@ -1,0 +1,126 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'terraform/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+
+env:
+  TF_WORKING_DIR: ./terraform
+  AWS_REGION: us-west-2
+
+permissions:
+  id-token: write   # For OIDC
+  contents: read    # For checkout
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'dev' }}
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.5.0
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      id: plan
+      run: |
+        terraform plan -var-file=terraform.tfvars \
+                      -var="environment=${{ github.event.inputs.environment || 'dev' }}" \
+                      -var="aws_region=${{ env.AWS_REGION }}" \
+                      -var="minio_root_user=${{ secrets.MINIO_ROOT_USER }}" \
+                      -var="minio_root_password=${{ secrets.MINIO_ROOT_PASSWORD }}" \
+                      -var="openai_api_key=${{ secrets.OPENAI_API_KEY }}" \
+                      -no-color \
+                      -input=false
+      continue-on-error: true
+      
+    - name: Update Pull Request with Plan
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+          #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+          
+          <details><summary>Show Plan</summary>
+          
+          \`\`\`terraform
+          ${{ steps.plan.outputs.stdout }}
+          \`\`\`
+          
+          </details>
+          
+          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: output
+          })
+      
+    - name: Terraform Plan Status
+      if: steps.plan.outcome == 'failure'
+      run: exit 1
+        
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        terraform apply -auto-approve \
+                       -var-file=terraform.tfvars \
+                       -var="environment=${{ github.event.inputs.environment || 'dev' }}" \
+                       -var="aws_region=${{ env.AWS_REGION }}" \
+                       -var="minio_root_user=${{ secrets.MINIO_ROOT_USER }}" \
+                       -var="minio_root_password=${{ secrets.MINIO_ROOT_PASSWORD }}" \
+                       -var="openai_api_key=${{ secrets.OPENAI_API_KEY }}" \
+                       -input=false
