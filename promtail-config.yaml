@@ -7,6 +7,14 @@ positions:
 
 clients:
   - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1024
+    rate_limit: 2MB  # Limit to 2MB/s
+    tenant_id: fake
+    backoff_config:
+      min_period: 100ms
+      max_period: 10s
+      max_retries: 10
 
 scrape_configs:
   - job_name: docker
