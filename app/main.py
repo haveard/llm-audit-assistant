@@ -22,7 +22,8 @@ rag_pipeline = RAGPipeline(LLMClient())
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    rag_pipeline.weaviate.close()
+    if rag_pipeline.weaviate is not None:
+        rag_pipeline.weaviate.close()
 
 
 app = FastAPI(title="LLM Audit Assistant", lifespan=lifespan)
