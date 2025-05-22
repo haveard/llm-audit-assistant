@@ -12,11 +12,12 @@ LLM Audit Assistant is a self-hosted proof-of-concept platform designed for team
 ## Quickstart
 
 1. Clone the repo
-2. Build and start all services:
+2. Set up your `.env` file.
+3. Build and start all services:
    ```sh
    docker compose up --build
    ```
-3. Access the API at [http://localhost:8000/docs](http://localhost:8000/docs) and the UI at [http://localhost:8501](http://localhost:8501)
+4. Access the API at [http://localhost:8000/docs](http://localhost:8000/docs) and the UI at [http://localhost:8501](http://localhost:8501)
 
 **Note:**
 - The UI and backend communicate via Docker Compose networking. The UI uses the `BACKEND_URL` environment variable, which defaults to `http://app:8000` inside Docker Compose. No manual changes are needed for connectivity.
